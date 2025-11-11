@@ -1,39 +1,47 @@
-# Formative-Assignment
+<h1 align="center">🧠 NCD-RisC Data Analysis – Formative Assignment</h1>
 
-Welcome to ProjectTemplate!
+<p align="center">
+  <b>R Markdown · Data Visualisation · Global Health · CRISP-DM</b><br>
+  <a href="https://github.com/Rucyvar/Formative-Assignment/stargazers">
+    <img src="https://img.shields.io/github/stars/Rucyvar/Formative-Assignment?color=gold" alt="Stars">
+  </a>
+  <a href="https://github.com/Rucyvar/Formative-Assignment/issues">
+    <img src="https://img.shields.io/github/issues/Rucyvar/Formative-Assignment?color=red" alt="Issues">
+  </a>
+  <a href="https://github.com/Rucyvar/Formative-Assignment/commits/main">
+    <img src="https://img.shields.io/github/last-commit/Rucyvar/Formative-Assignment?color=blue" alt="Last Commit">
+  </a>
+</p>
 
-This file introduces you to ProjectTemplate, but you should eventually replace
-the contents of this file with an introduction to your project. People who
-work with your data in the future will thank you for it, including your future
-self.
+---
 
-ProjectTemplate is an R package that helps you organize your statistical
-analysis projects. Since you're reading this file, we'll assume that you've
-already called `create.project()` to set up this project and all of its
-contents.
+## 📘 Overview
 
-To load your new project, you'll first need to `setwd()` into the directory
-where this README file is located. Then you need to run the following two
-lines of R code:
+This repository contains the R Markdown-based analysis for the **NCD-RisC (Non-Communicable Disease Risk Factor Collaboration)** dataset.  
+The objective is to explore **global health trends** such as **BMI, blood pressure, and diabetes prevalence** across years and regions.
 
-	library('ProjectTemplate')
-	load.project()
+The project follows the **CRISP-DM framework** — from business understanding to deployment — to interpret long-term public-health trends and provide data-driven insights.
 
-After you enter the second line of code, you'll see a series of automated
-messages as ProjectTemplate goes about doing its work. This work involves:
-* Reading in the global configuration file contained in `config`.
-* Loading any R packages you listed in the configuration file.
-* Reading in any datasets stored in `data` or `cache`.
-* Preprocessing your data using the files in the `munge` directory.
+---
 
-Once that's done, you can execute any code you'd like. For every analysis
-you create, we'd recommend putting a separate file in the `src` directory.
-If the files start with the two lines mentioned above:
+## 🧑‍💻 Authors
 
-	library('ProjectTemplate')
-	load.project()
+| Name | Role | Email |
+|------|------|--------|
+| **Rushi Girdharbhai Vasoya** | 
+| Rishabh Yadav | 
+| Siram Hemanth | 
 
-You'll have access to all of your data, already fully preprocessed, and
-all of the libraries you want to use.
+---
 
-For more details about ProjectTemplate, see http://projecttemplate.net
+## 🎯 Objectives
+
+- Analyse **trends (1990 – 2015)** in BMI, Blood Pressure, and Diabetes.  
+- Compare **male vs female** differences globally and by region.  
+- Identify **top 10 countries** for each indicator in the latest year.  
+- Create reproducible **R Markdown report** with visual explanations.
+
+---
+
+## 🧩 Repository Structure
+
