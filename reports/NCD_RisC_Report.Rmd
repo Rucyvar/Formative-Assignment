@@ -1,0 +1,300 @@
+---
+title: "NCD-RisC Formative Report"
+author: "Rushi Girdharbhai Vasoya,Rishabh Yadav, Siram Hemanth"
+date: "2025-11-09"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load required packages
+library(ProjectTemplate)
+library(dplyr)
+library(ggplot2)
+setwd("C:/Users/vasoy/Downloads/r stats/Formative-Assignment")
+# Load project (assumes CSV files are in data/ and ProjectTemplate is set up)
+load.project()
+```
+
+## 1) Business Understanding (CRISP-DM)
+
+Long-term lifestyle-related conditions — including obesity, elevated blood pressure, diabetes, and imbalanced cholesterol — now represent a leading cause of illness and premature death around the world. Together, these chronic illnesses contribute significantly to global mortality, particularly among adults in both developed and developing nations.
+
+
+This analysis draws on the NCD-RisC country-level datasets to explore:
+
+- **A) Global trend by year:** observing how indicators like BMI, blood pressure, and diabetes rates have evolved.
+- **B) Top 10 countries (latest year):** identifying nations with the highest recorded levels for each indicator.
+
+These insights aim to support evidence-driven public health decisions and monitoring of worldwide progress in disease prevention.
+
+## 2) Data Understanding
+
+Multiple datasets were imported automatically from the data/ directory using the ProjectTemplate framework.
+
+The following objects were detected during project initialization:
+
+- raw_objects_present
+
+- detected_info
+
+
+Each dataset contains age-standardized national estimates for various health indicators, including average body mass index, mean blood pressure, prevalence of diabetes, and cholesterol measures across multiple calendar years.
+
+## 3) Data Preparaion
+
+Data preprocessing was carried out in the script munge/01-LoadAndCache.R, which:
+
+- Recognizes key identifying fields such as year, sex, and country/ISO code.
+
+- Calculates group-level means for all relevant numeric variables.
+
+- Stores clean summary tables (ncd_summaries, detected_info) to improve reproducibility and consistency.
+
+Importantly, the original raw datasets remain untouched, ensuring full transparency and traceability.
+
+## 4) Modeling / Exploration
+
+- **A) Global trend by year:**
+This stage summarises each dataset’s indicator globally and visualizes how its overall value has shifted over time.
+
+```{r A }
+plot_yearly <- function(ds) {
+df <- ncd_summaries %>% dplyr::filter(.dataset == ds)
+if (!nrow(df)) return(NULL)
+
+k <- get_keys(df)
+yr <- k$year
+
+if (is.na(yr)) {
+return(
+ggplot() +
+ggtitle(paste(ds, "— missing 'year' column"))
+)
+}
+
+metric <- select_best_metric(df, ds, exclude = yr)
+
+if (is.null(metric)) {
+return(
+ggplot() +
+ggtitle(paste(ds, "— no valid metric"))
+)
+}
+
+df_sum <- df %>%
+dplyr::group_by(.data[[yr]]) %>%
+dplyr::summarise(
+total = sum(.data[[metric]], na.rm = TRUE),
+.groups = "drop"
+)
+
+ggplot(df_sum, aes(x = as.integer(.data[[yr]]), y = total)) +
+geom_line(color = "#0072B2") +
+geom_point(color = "#D55E00") +
+labs(
+title = paste0(ds, ": Global Trend by Year (", metric, ")"),
+x = "Year",
+y = paste("Total", metric)
+) +
+theme_minimal()
+}
+```
+
+```{r plot-yearly-trends, fig.width=12, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(patchwork)
+library(gridExtra)
+
+
+# Function to make plots compact and readable
+clean_plot <- function(p) {
+  p + theme_minimal(base_size = 6) +
+    theme(
+      plot.title = element_text(size = 7, face = "bold"),
+      axis.text.x = element_text(size = 5, angle = 45, hjust = 1),
+      axis.text.y = element_text(size = 5),
+      axis.title.x = element_text(size = 6),
+      axis.title.y = element_text(size = 6),
+      plot.margin = margin(1, 1, 1, 1, "pt"),
+      legend.position = "none"
+    )
+}
+
+if (exists("datasets")) {
+  plots <- lapply(datasets, function(ds) {
+    p <- plot_yearly(ds)
+    if (!is.null(p)) clean_plot(p)
+  })
+  plots <- Filter(Negate(is.null), plots)
+  
+  # Print 6 plots per page (3 rows × 2 columns)
+  for (i in seq(1, length(plots), by = 6)) {
+    grid.arrange(grobs = plots[i:min(i+5, length(plots))], ncol = 2, nrow = 3)
+  }
+}
+
+```
+- **B) Top 10 countries (latest year):**
+This visualisation identifies the ten countries with the highest metric values in the latest available year for each dataset.
+
+```{r top 10 }
+plot_top_countries <- function(ds, top_n = 10) {
+df <- ncd_summaries %>% dplyr::filter(.dataset == ds)
+if (!nrow(df)) return(NULL)
+
+k  <- get_keys(df)
+yr <- k$year
+id <- k$id
+
+if (any(is.na(c(yr, id)))) {
+return(
+ggplot() +
+ggtitle(paste(ds, "— missing year or ID column"))
+)
+}
+
+metric <- select_best_metric(df, ds, exclude = yr)
+
+if (is.null(metric)) {
+return(
+ggplot() +
+ggtitle(paste(ds, "— no valid metric"))
+)
+}
+
+latest <- suppressWarnings(max(df[[yr]], na.rm = TRUE))
+
+tab <- df %>%
+dplyr::filter(.data[[yr]] == latest) %>%
+dplyr::select(dplyr::all_of(c(id, metric))) %>%
+dplyr::arrange(dplyr::desc(.data[[metric]])) %>%
+dplyr::slice_head(n = top_n)
+
+ggplot(tab, aes(x = reorder(.data[[id]], .data[[metric]]), y = .data[[metric]])) +
+geom_col(fill = "#56B4E9") +
+coord_flip() +
+labs(
+title = paste0(ds, ": Top ", top_n, " Countries (", latest, ")"),
+x = "Country",
+y = metric
+) +
+theme_minimal()
+}
+```
+```{r top-country-plots, fig.width=12, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(patchwork)
+
+# Use the same compact styling as before
+clean_plot <- function(p) {
+  p + theme_minimal(base_size = 6) +
+    theme(
+      plot.title   = element_text(size = 7, face = "bold"),
+      axis.text.x  = element_text(size = 5),
+      axis.text.y  = element_text(size = 5),
+      axis.title.x = element_text(size = 6),
+      axis.title.y = element_text(size = 6),
+      plot.margin  = margin(1, 1, 1, 1, "pt"),
+      legend.position = "none"
+    )
+}
+
+# Generate top 10 country bar charts
+if (exists("datasets")) {
+  plots <- lapply(datasets, function(ds) {
+    p <- plot_top_countries(ds)   # ✅ Correct function here
+    if (!is.null(p)) clean_plot(p) else NULL
+  })
+  plots <- Filter(Negate(is.null), plots)
+  
+  # Display up to 6 plots per page → 2 columns × 3 rows
+  for (i in seq(1, length(plots), by = 6)) {
+    sub_plots <- plots[i:min(i + 5, length(plots))]
+    combined <- wrap_plots(
+      sub_plots,
+      ncol = 2,
+      nrow = 3
+    )
+    print(combined)
+  }
+}
+
+
+```
+
+## 5) Evaluation
+
+** key Insights**
+
+- Average BMI continues to increase across most regions, suggesting persistent global weight-related health challenges.
+
+- Blood pressure levels show gradual improvement, possibly due to better awareness and access to medication.
+
+- Diabetes and cholesterol indicators remain problematic, showing slower or inconsistent reductions.
+
+**Limitations**
+
+- Datasets cover different year ranges, which can limit direct comparisons.
+
+- National averages may mask regional and socioeconomic inequalities.
+
+- Some datasets depend on ISO country codes rather than descriptive names, which can affect merging or interpretation.
+
+## 6) Deployment / Next Steps
+
+Future improvements may include:
+
+- Comparing regions or income groups to reveal disparities.
+
+- Building predictive or time-series models to forecast future trends.
+
+- Creating interactive dashboards in R Shiny or Power BI to communicate insights more effectively.
+
+## 7) Reproducibility
+
+To reproduce all results:
+
+1. Place every .csv dataset into the project’s data/ directory.
+
+2. Launch R and execute:
+
+```{r load}
+#library(ProjectTemplate)
+#load.project()
+```
+3. Knit or render this R Markdown file into HTML or PDF format.
+
+All plots and summaries will regenerate automatically from the raw data, ensuring complete reproducibility and transparency.
+
+## 8. References
+
+The following sources were referenced while preparing this report.  
+They provide background information on global noncommunicable diseases (NCDs), their impact, and related public-health data.
+
+1. **World Health Organization (2023).** *Noncommunicable diseases: Key facts.* World Health Organization.  
+   Available at: [https://www.who.int/news-room/fact-sheets/detail/noncommunicable-diseases](https://www.who.int/news-room/fact-sheets/detail/noncommunicable-diseases)  
+
+2. **Pan American Health Organization (2022).** *Noncommunicable diseases in the Americas.*  
+   Available at: [https://www.paho.org/en/topics/noncommunicable-diseases](https://www.paho.org/en/topics/noncommunicable-diseases)  
+
+3. **Global Burden of Disease Collaborative Network (2023).** *Global Burden of Disease Study 2023 (GBD 2023) Results.*  
+   Institute for Health Metrics and Evaluation (IHME).  
+   Available at: [https://www.healthdata.org/gbd](https://www.healthdata.org/gbd)  
+
+4. **Walk-In Lab (2024).** *Heart Disease 101: Types, Symptoms, Risk Factors.*  
+   Available at: [https://resources.walkinlab.com/heart-health/heart-disease-101/](https://resources.walkinlab.com/heart-health/heart-disease-101/)  
+
+5. **SciELO Chile (2024).** *Increase in consumption of ultra-processed foods during the COVID-19 pandemic and its impact on noncommunicable diseases.* *Revista Chilena de Nutrición.*  
+   Available at: [https://www.scielo.cl/scielo.php?script=sci_arttext&pid=S0717-75182024000300215](https://www.scielo.cl/scielo.php?script=sci_arttext&pid=S0717-75182024000300215)  
+
+6. **OpenAI (2025).** *ChatGPT (GPT-5 model) conversation assistance.* OpenAI.  
+   Used to refine grammar, structure, and clarity of report text while preserving original ideas.  
+   Available at: [https://chat.openai.com/](https://chat.openai.com/)  
+
+
+## 9. Acknowledgment
+
+Some textual refinements (grammar, tone, and clarity) were assisted by **OpenAI ChatGPT (GPT-5 model)**.  
+All analysis, code, and interpretations presented in this report are the **original work of the author**.
