@@ -45,3 +45,23 @@ The project follows the **CRISP-DM framework** — from business understanding t
 
 ## 🧩 Repository Structure
 
+Formative-Assignment/
+├── data/ # Raw and processed CSV datasets
+│ ├── ncd_bmi.csv
+│ ├── ncd_bp.csv
+│ └── ncd_diabetes.csv
+│
+├── graphs/ # Output visualisations
+│ ├── fig1_BMI_Trends.png
+│ └── fig2_BP_Trends.png
+│
+├── reports/ # Final report and R Markdown source
+│ ├── NCD_RisC_Report.Rmd
+│ └── NCD_RisC_Report.pdf
+│
+├── scripts/ # Custom helper functions (optional)
+│ └── utils.R
+│
+├── .Rproj # R Project configuration
+├── requirements.txt # List of required R packages
+└── README.md # This file
