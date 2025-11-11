@@ -26,8 +26,8 @@ The project follows the **CRISP-DM framework** — from business understanding t
 
 ## 🧑‍💻 Authors
 
-| Name | Role | Email |
-|------|------|--------|
+| Name |
+|------|
 | **Rushi Girdharbhai Vasoya** | 
 | Rishabh Yadav | 
 | Siram Hemanth | 
